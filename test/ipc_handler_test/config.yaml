@@ -1,0 +1,5 @@
+shared_object_config:
+  memory_region_name: "SchiObjects"
+  joint_names:
+    - "left_wheel"
+    - "right_wheel"
