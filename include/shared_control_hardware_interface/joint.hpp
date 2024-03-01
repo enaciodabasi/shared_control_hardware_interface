@@ -34,7 +34,8 @@ namespace schi
     {
       public:
 
-      explicit Joint() = default;
+      Joint();
+      Joint(Joint& to_copy_from);
 
       double actualPosition;
       double actualVelocity;

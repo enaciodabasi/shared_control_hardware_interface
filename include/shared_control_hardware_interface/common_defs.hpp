@@ -18,7 +18,11 @@ namespace schi
   enum ReturnCode
   {
     Error = 0,
-    Success = 1
+    Success = 1,
+    SharedSegmentCreateError,
+    SharedSegmentNamedObjectConstructError,
+    SharedSegmentOpenError,
+    SharedSegmentNamedObjectSearchError,
   };
 
 } // End of namespace schi

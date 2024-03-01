@@ -27,7 +27,8 @@
 
 namespace schi
 {
-
+  // Bytes:
+  constexpr auto MINIMUM_SHM_SIZE = 1024; 
   /**
    * @brief Parses the configuration (.yaml) file to gather information about the shared joint objects to be created.
    * @brief This function can either be used by a hardware interface or a controller interface object.
@@ -47,13 +48,11 @@ namespace schi
 
       IpcHandler() = default;
 
-      virtual ~IpcHandler();
+      virtual ~IpcHandler() = default;
 
       virtual schi::ReturnCode init(const std::string& path_to_config_file) = 0;
 
-      virtual schi::ReturnCode configureSharedObjects(const std::string& path_to_config_file) = 0;
-
-      std::optional<double> getSharedObjectVariable(
+      /* std::optional<double> getSharedObjectVariable(
         const std::string& joint_name,
         const joint::JointVariables& joint_var
       );
@@ -62,17 +61,21 @@ namespace schi
         const std::string& joint_name,
         const joint::JointVariables& joint_var,
         const double value
-      );
+      ); */
 
       protected:
 
-      std::unordered_map<std::string, std::unique_ptr<schi::joint::Joint>> m_ShJointMap;
+      std::unordered_map<std::string, /* std::unique_ptr<schi::joint::Joint> */schi::joint::Joint*> m_ShJointMap;
 
       std::string m_ShSegmentName;
+      
+      std::vector<std::string> m_SharedObjectNames;
 
       boost::interprocess::managed_shared_memory m_ShMemory;
 
-      std::optional<double> getValueFromShMemory(
+      virtual schi::ReturnCode configureSharedObjects(const std::string& path_to_config_file) = 0;
+
+      /* std::optional<double> getValueFromShMemory(
         const std::string& joint_name,
         const joint::JointVariables& joint_var
       );
@@ -81,10 +84,11 @@ namespace schi
         const std::string& joint_name,
         const joint::JointVariables& joint_var,
         const double value
-      );
+      ); */
 
     };
-
+//merhaba nacci ben yunus
+//merhaba yunus
     namespace hardware_interface
     {
       class IpcHandlerHWI : public IpcHandler
@@ -97,11 +101,31 @@ namespace schi
 
         schi::ReturnCode init(const std::string& path_to_config_file) override;
 
-        schi::ReturnCode configureSharedObjects(const std::string& path_to_config_file) override;
+        std::optional<double> getSharedObjectVariable(
+        const std::string& joint_name,
+        const joint::JointVariables& joint_var
+      );
+
+      ReturnCode setSharedObjectVariable(
+        const std::string& joint_name,
+        const joint::JointVariables& joint_var,
+        const double value
+      );
 
         private:
 
-        
+        schi::ReturnCode configureSharedObjects(const std::string& path_to_config_file) override;
+
+        std::optional<double> getValueFromShMemory(
+          const std::string& joint_name,
+          const joint::JointVariables& joint_var
+        );
+
+        ReturnCode setValueToShMemory(
+          const std::string& joint_name,
+          const joint::JointVariables& joint_var,
+          const double value
+        );
 
       };
 
@@ -119,10 +143,31 @@ namespace schi
 
         schi::ReturnCode init(const std::string& path_to_config_file) override;
 
-        schi::ReturnCode configureSharedObjects(const std::string& path_to_config_file) override;
+        std::optional<double> getSharedObjectVariable(
+          const std::string& joint_name,
+          const joint::JointVariables& joint_var
+        );
+
+        ReturnCode setSharedObjectVariable(
+          const std::string& joint_name,
+          const joint::JointVariables& joint_var,
+          const double value
+        );
 
         private:
 
+        schi::ReturnCode configureSharedObjects(const std::string& path_to_config_file) override;
+
+        std::optional<double> getValueFromShMemory(
+          const std::string& joint_name,
+          const joint::JointVariables& joint_var
+        );
+
+        ReturnCode setValueToShMemory(
+          const std::string& joint_name,
+          const joint::JointVariables& joint_var,
+          const double value
+        );
 
       };
     }
