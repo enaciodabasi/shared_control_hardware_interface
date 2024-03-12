@@ -12,8 +12,6 @@
 
 #include "shared_control_hardware_interface/ipc_handler.hpp"
 
-#include <iostream>
-
 namespace schi
 {
 
@@ -74,6 +72,11 @@ namespace schi
         );
       }
 
+      schi::ReturnCode IpcHandlerHWI::init(const std::vector<std::string> ipc_config_info)
+      {
+        return configureSharedObjects(ipc_config_info);
+      }
+
       schi::ReturnCode IpcHandlerHWI::init(const std::string& path_to_config_file)
       {
         if(path_to_config_file.empty())
@@ -86,24 +89,24 @@ namespace schi
           return schi::ReturnCode::Error;
         }
 
-        return configureSharedObjects(path_to_config_file);
-      }
-
-      schi::ReturnCode IpcHandlerHWI::configureSharedObjects(const std::string& path_to_config_file)
-      {
         const auto ipcInfoOpt = parseConfigFile(path_to_config_file);
         if(!ipcInfoOpt)
         {
           return schi::ReturnCode::Error;
         }
+
+        return init(ipcInfoOpt.value());
+      }
+
+      schi::ReturnCode IpcHandlerHWI::configureSharedObjects(const std::vector<std::string> ipc_config_info)
+      {
         
-        const std::vector<std::string> ipcInfo = ipcInfoOpt.value();
-        m_ShSegmentName = ipcInfo[0];
-        m_SharedObjectNames.reserve(ipcInfo.size() - 1);
-        m_SharedObjectNames.insert(m_SharedObjectNames.end(), ipcInfo.begin() + 1, ipcInfo.end());
+        m_ShSegmentName = ipc_config_info[0];
+        m_SharedObjectNames.reserve(ipc_config_info.size() - 1);
+        m_SharedObjectNames.insert(m_SharedObjectNames.end(), ipc_config_info.begin() + 1, ipc_config_info.end());
         try
         {
-          std::size_t requiredSize = (ipcInfo.size() - 1) * sizeof(schi::joint::Joint);
+          std::size_t requiredSize = (ipc_config_info.size() - 1) * sizeof(schi::joint::Joint);
           if(requiredSize < MINIMUM_SHM_SIZE)
           {
             requiredSize = MINIMUM_SHM_SIZE;
@@ -122,7 +125,7 @@ namespace schi
           return ReturnCode::SharedSegmentCreateError;
         }
 
-        for(std::vector<std::string>::const_iterator ipcInfoIt = ipcInfo.begin() + 1; ipcInfoIt != ipcInfo.end(); ipcInfoIt++)
+        for(std::vector<std::string>::const_iterator ipcInfoIt = ipc_config_info.begin() + 1; ipcInfoIt != ipc_config_info.end(); ipcInfoIt++)
         {
           auto currentObjName = *ipcInfoIt;
           m_ShJointMap.insert(
@@ -261,6 +264,11 @@ namespace schi
 
       }
 
+      schi::ReturnCode IpcHandlerCI::init(const std::vector<std::string> ipc_config_info)
+      {
+        return configureSharedObjects(ipc_config_info);
+      }
+
       schi::ReturnCode IpcHandlerCI::init(const std::string& path_to_config_file)
       {
         if(path_to_config_file.empty())
@@ -273,20 +281,13 @@ namespace schi
           return schi::ReturnCode::Error;
         }
 
-        return configureSharedObjects(path_to_config_file);
+        return init(ipcInfo.value());
       }
 
-      schi::ReturnCode IpcHandlerCI::configureSharedObjects(const std::string& path_to_config_file)
+      schi::ReturnCode IpcHandlerCI::configureSharedObjects(const std::vector<std::string> ipc_config_info)
       {
         
-        const auto ipcInfoOpt = parseConfigFile(path_to_config_file);
-        if(!ipcInfoOpt)
-        {
-          return schi::ReturnCode::Error;
-        }
-        
-        const std::vector<std::string> ipcInfo = ipcInfoOpt.value();
-        m_ShSegmentName = ipcInfo[0];
+        m_ShSegmentName = ipc_config_info[0];
 
         try{
           m_ShMemory = boost::interprocess::managed_shared_memory(
@@ -299,8 +300,7 @@ namespace schi
           return ReturnCode::SharedSegmentOpenError;
         }
         
-
-        for(std::vector<std::string>::const_iterator ipcInfoIt = ipcInfo.begin() + 1; ipcInfoIt != ipcInfo.end(); ipcInfoIt++)
+        for(std::vector<std::string>::const_iterator ipcInfoIt = ipc_config_info.begin() + 1; ipcInfoIt != ipc_config_info.end(); ipcInfoIt++)
         {
           auto currentObjName = *ipcInfoIt;
           m_ShJointMap.insert(

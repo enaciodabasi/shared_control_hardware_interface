@@ -12,6 +12,8 @@
 #ifndef HARDWARE_INTERFACE_HPP_
 #define HARDWARE_INTERFACE_HPP_
 
+#include <string>
+
 namespace schi
 {
   
@@ -22,9 +24,15 @@ namespace schi
     {
       public:
 
+      HardwareInterface();
+
+      virtual ~HardwareInterface();
+
+      protected:
+
+
       private:
 
-      
       
     };
 

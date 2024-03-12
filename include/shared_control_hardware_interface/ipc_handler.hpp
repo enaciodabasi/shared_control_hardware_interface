@@ -17,6 +17,7 @@
 #include <optional>
 #include <memory>
 #include <unordered_map>
+#include <iostream>
 
 #include <yaml-cpp/yaml.h>
 
@@ -46,22 +47,13 @@ namespace schi
     {
       public:
 
-      IpcHandler() = default;
+      IpcHandler(){}
 
-      virtual ~IpcHandler() = default;
+      virtual ~IpcHandler(){}
+
+      virtual schi::ReturnCode init(const std::vector<std::string> ipc_config_info) = 0;
 
       virtual schi::ReturnCode init(const std::string& path_to_config_file) = 0;
-
-      /* std::optional<double> getSharedObjectVariable(
-        const std::string& joint_name,
-        const joint::JointVariables& joint_var
-      );
-
-      ReturnCode setSharedObjectVariable(
-        const std::string& joint_name,
-        const joint::JointVariables& joint_var,
-        const double value
-      ); */
 
       protected:
 
@@ -73,22 +65,10 @@ namespace schi
 
       boost::interprocess::managed_shared_memory m_ShMemory;
 
-      virtual schi::ReturnCode configureSharedObjects(const std::string& path_to_config_file) = 0;
-
-      /* std::optional<double> getValueFromShMemory(
-        const std::string& joint_name,
-        const joint::JointVariables& joint_var
-      );
-
-      ReturnCode setValueToShMemory(
-        const std::string& joint_name,
-        const joint::JointVariables& joint_var,
-        const double value
-      ); */
+      virtual schi::ReturnCode configureSharedObjects(const std::vector<std::string> ipc_config_info) = 0;
 
     };
-//merhaba nacci ben yunus
-//merhaba yunus
+
     namespace hardware_interface
     {
       class IpcHandlerHWI : public IpcHandler
@@ -100,6 +80,8 @@ namespace schi
         ~IpcHandlerHWI();
 
         schi::ReturnCode init(const std::string& path_to_config_file) override;
+
+        schi::ReturnCode init(const std::vector<std::string> ipc_config_info) override;
 
         std::optional<double> getSharedObjectVariable(
         const std::string& joint_name,
@@ -114,7 +96,7 @@ namespace schi
 
         private:
 
-        schi::ReturnCode configureSharedObjects(const std::string& path_to_config_file) override;
+        schi::ReturnCode configureSharedObjects(const std::vector<std::string> ipc_config_info) override;
 
         std::optional<double> getValueFromShMemory(
           const std::string& joint_name,
@@ -143,6 +125,8 @@ namespace schi
 
         schi::ReturnCode init(const std::string& path_to_config_file) override;
 
+        schi::ReturnCode init(const std::vector<std::string> ipc_config_info) override;
+
         std::optional<double> getSharedObjectVariable(
           const std::string& joint_name,
           const joint::JointVariables& joint_var
@@ -156,7 +140,7 @@ namespace schi
 
         private:
 
-        schi::ReturnCode configureSharedObjects(const std::string& path_to_config_file) override;
+        schi::ReturnCode configureSharedObjects(const std::vector<std::string> ipc_config_info) override;
 
         std::optional<double> getValueFromShMemory(
           const std::string& joint_name,
